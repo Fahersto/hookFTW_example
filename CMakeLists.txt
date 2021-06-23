@@ -9,3 +9,6 @@ file(GLOB_RECURSE EXAMPLE_SOURCES LIST_DIRECTORIES true src/*.h src/*.cpp)
 
 # Add hookftw_example.dll
 add_library (hookftw_example SHARED ${EXAMPLE_SOURCES})
+
+#include to also build hookFTW
+#add_subdirectory(hookftw)
