@@ -1,0 +1,3 @@
+[submodule "hookftw"]
+	path = hookftw
+	url = git@git.fslab.de:fstotz2s/hookftw.git
