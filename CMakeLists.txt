@@ -7,8 +7,14 @@ include_directories(hookftw/library/src)
 # gather source files of this example
 file(GLOB_RECURSE EXAMPLE_SOURCES LIST_DIRECTORIES true src/*.h src/*.cpp)
 
-# Add hookftw_example.dll
+# build hookFTW
+add_subdirectory(hookftw)
+
+# add hookftw_example.exe
 add_library (hookftw_example SHARED ${EXAMPLE_SOURCES})
 
-#include to also build hookFTW
-#add_subdirectory(hookftw)
+# link hookFTW
+target_link_libraries(hookftw_example hookftw)
+
+# link dbghelp (required to resolve debug symbols)
+target_link_libraries(hookftw_example dbghelp)
