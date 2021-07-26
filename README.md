@@ -1,6 +1,6 @@
 ![hookftw banner](img/hookftw_banner.png)
-# Example project
-This project demonstrates how to use hookFTW in your project. The recommended way is using CMAKE.
+# hookFTW - example project
+This project demonstrates how to use hookFTW in your project using CMAKE.
 
 ## Setting up using CMAKE
 1. Clone including submodules:
