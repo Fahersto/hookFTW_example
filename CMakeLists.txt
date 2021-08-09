@@ -13,12 +13,8 @@ add_subdirectory(hookftw)
 # add hookftw_example.dll
 add_library (hookftw_example SHARED ${EXAMPLE_SOURCES})
 
-# add hookftw_example.exe
-add_executable (hookftw_example_executable ${EXAMPLE_SOURCES})
-
 # link hookFTW
 target_link_libraries(hookftw_example hookftw)
-target_link_libraries(hookftw_example_executable hookftw)
 
 # link dbghelp (required to resolve debug symbols)
 target_link_libraries(hookftw_example dbghelp)
