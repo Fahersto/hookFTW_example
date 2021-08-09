@@ -2,6 +2,9 @@
 * This example project is meant to be injected into "victim.exe" provided in the hookftw_example/target folder in this repository. 
 * Debug symbols of "victim.exe" are also provided.
 * The project demonstrates all available hooking techniques in hookFTW.
+* 
+* !! compile in 64 bit !!
+* 
 */
 
 #include <cstdio>
@@ -16,16 +19,20 @@
 #include "DbgSymbols.h"
 
 
-// type definition of Sleep function (MSDN)
-using originalSleepFunction = void(WINAPI*)(DWORD dwMilliseconds);
-originalSleepFunction originalSleep;
+// type definition of GetModuleHandleA function (MSDN)
+using getModuleHandleAFunction = HMODULE(WINAPI*)(LPCSTR lpModuleName);
+getModuleHandleAFunction originalGetModuleHandleA;
 
-void WINAPI hookedSleep(DWORD dwMilliseconds)
+// compiler ignored __cdecl keyword and made is fastcall anyway
+using cdeclCallFunction = int(__fastcall*)(int x, int y, int );
+cdeclCallFunction originalCdeclCallFunction;
+
+HMODULE WINAPI hookedGetModuleHandleA(LPCSTR lpModuleName)
 {
-	printf("Sleep was called!\n");
+	printf("\tGetModuleHandleA was called!\n");
 
-	// call original Sleep function
-	originalSleep(dwMilliseconds);
+	// call original GetModuleHandleA function
+	return originalGetModuleHandleA(lpModuleName);
 }
 
 void hookedCow()
@@ -35,14 +42,14 @@ void hookedCow()
 
 int hookedCalculate(int x)
 {
-	printf("calculate called, returning %d\n", x);
+	printf("\tcalculate called, returning %d\n", x);
 	return x;
 }
 
 int __fastcall hookedCdeclCallFunc(int x, int y, int z)
 {
-	printf("cdeclCallFunc called\n");
-	return x;
+	printf("\tcdeclCallFunc called, returning twice the original result\n");
+	return 2 * originalCdeclCallFunction(x,y,z);
 }
 
 DWORD __stdcall Run(LPVOID hModule)
@@ -51,7 +58,8 @@ DWORD __stdcall Run(LPVOID hModule)
 
 	// byte patching at the beginning of the function
 	hookftw::Detour detourHook;
-	detourHook.Hook(baseAddress + 0x1B60, (int8_t*)hookedCdeclCallFunc);
+	(cdeclCallFunction)originalCdeclCallFunction = (cdeclCallFunction)detourHook.Hook(baseAddress + 0x1B60, (int8_t*)hookedCdeclCallFunc);
+
 
 	// byte patching at the beginning of the function
 	hookftw::MidfunctionHook midfunctionHook;
@@ -71,7 +79,7 @@ DWORD __stdcall Run(LPVOID hModule)
 
 	// import address table hook
 	hookftw::IATHook iatHook;
-	originalSleep = (originalSleepFunction)iatHook.Hook("Kernel32.dll", "Sleep", (int8_t*)hookedSleep);
+	originalGetModuleHandleA = (getModuleHandleAFunction)iatHook.Hook("Kernel32.dll", "GetModuleHandleA", (int8_t*)hookedGetModuleHandleA);
 
 	// use dbgsymbols (.pdb file) to resolve virtual function table of Cow class
 	hookftw::DbgSymbols dbgSymbols;
@@ -93,6 +101,7 @@ DWORD __stdcall Run(LPVOID hModule)
 			iatHook.Unhook();
 			vftHook.Unhook();
 			vehHook.Unhook();
+			printf("~~~ Unhooked all functions ~~~~\n");
 			break;
 		}
 		Sleep(1);
